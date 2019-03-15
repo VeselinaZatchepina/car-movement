@@ -11,6 +11,8 @@ import android.view.animation.LinearInterpolator
 import android.animation.Animator
 import android.media.MediaPlayer
 import android.util.Log
+import android.view.animation.AccelerateDecelerateInterpolator
+import android.view.animation.AccelerateInterpolator
 
 
 class CarMovementFragment : Fragment(), View.OnTouchListener {
@@ -138,7 +140,7 @@ class CarMovementFragment : Fragment(), View.OnTouchListener {
             val valueAnimator = ValueAnimator.ofFloat(0f, 1f)
             valueAnimator.apply {
                 duration = 1000
-                interpolator = LinearInterpolator()
+                interpolator = AccelerateDecelerateInterpolator()
                 addUpdateListener { animator ->
                     val animationFraction = animator.animatedFraction
                     val animationPositionX = animationFraction * point.x + (1 - animationFraction) * currentCarPositionX
@@ -154,8 +156,8 @@ class CarMovementFragment : Fragment(), View.OnTouchListener {
                     }
 
                     override fun onAnimationEnd(animation: Animator?) {
-                        val mediaPlayer = MediaPlayer.create(requireContext(), R.raw.taxi)
-                        mediaPlayer.start()
+                       /* val mediaPlayer = MediaPlayer.create(requireContext(), R.raw.taxi)
+                         mediaPlayer.start()*/
                         // Теперь можем прослушивать нажатия на экран.
                         isCarMoving = false
                     }
@@ -174,17 +176,16 @@ class CarMovementFragment : Fragment(), View.OnTouchListener {
         }
     }
 
-    /**
-        Метод рассчитывает координаты поворота машины в зависимости от того, в какой квадрант попала целевая точка.
-        Угол считается через арктангенс отношения двух катетов (противолежащего рассчитываемому углу и прилежащего).
-        Квадранты:
-              4  |   1
-            -----|-----
-              3  |   2
-        [currentX] текущая координата X машины.
-        [currentY] текущая координата Y машины.
-        [targetX] целевая координата X машины.
-        [targetY] целевая координата Y машины.
+    /** Метод рассчитывает координаты поворота машины в зависимости от того, в какой квадрант попала целевая точка.
+     *  Угол считается через арктангенс отношения двух катетов (противолежащего рассчитываемому углу и прилежащего).
+     *  Квадранты:
+     *  4  |   1
+     *  ---|-----
+     *  3  |   2
+     * [currentX] текущая координата X машины.
+     * [currentY] текущая координата Y машины.
+     * [targetX] целевая координата X машины.
+     * [targetY] целевая координата Y машины.
      */
     private fun getAngleToRotate(currentX: Double, currentY: Double, targetX: Double, targetY: Double): Float {
         var angleToRotate = 0.0
@@ -196,11 +197,9 @@ class CarMovementFragment : Fragment(), View.OnTouchListener {
         if (currentX < targetX && currentY <= targetY) // Если target координаты находятся во втором квадранте
 
             angleToRotate = (90 + Math.toDegrees(Math.atan((ySide / xSide))))
-
         else if (currentX >= targetX && currentY <= targetY) // Если target координаты находятся в третьем квадранте
 
             angleToRotate = -(90 + Math.toDegrees(Math.atan((ySide / xSide))))
-
         else if (currentX >= targetX && currentY > targetY) // Если target координаты находятся в четвертом квадранте
 
             angleToRotate = -(90 - (Math.toDegrees(Math.atan((ySide / xSide)))))
