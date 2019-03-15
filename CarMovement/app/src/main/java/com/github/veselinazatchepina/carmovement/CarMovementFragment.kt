@@ -7,12 +7,9 @@ import android.widget.FrameLayout
 import androidx.fragment.app.Fragment
 import kotlinx.android.synthetic.main.fragment_car_movement.*
 import android.graphics.*
-import android.view.animation.LinearInterpolator
 import android.animation.Animator
-import android.media.MediaPlayer
 import android.util.Log
 import android.view.animation.AccelerateDecelerateInterpolator
-import android.view.animation.AccelerateInterpolator
 
 
 class CarMovementFragment : Fragment(), View.OnTouchListener {
@@ -83,34 +80,7 @@ class CarMovementFragment : Fragment(), View.OnTouchListener {
                         Point(currentCarPositionX, currentCarPositionY),
                         Point(targetX.toInt(), targetY.toInt())
                     )
-
-                    // Создаем анимацию поворта машины на нужный угол.
-                    car?.animate()
-                        ?.rotation(
-                            getAngleToRotate(
-                                currentCarPositionX.toDouble(),
-                                currentCarPositionY.toDouble(),
-                                targetX.toDouble(),
-                                targetY.toDouble()
-                            )
-                        )
-                        ?.setDuration(1000)
-                        ?.setListener(object : Animator.AnimatorListener {
-                            override fun onAnimationRepeat(animation: Animator?) {
-
-                            }
-
-                            override fun onAnimationEnd(animation: Animator?) {
-                                defineTransitionAnimation(currentPathCoordinates)
-                            }
-
-                            override fun onAnimationCancel(animation: Animator?) {
-                            }
-
-                            override fun onAnimationStart(animation: Animator?) {
-
-                            }
-                        })
+                    defineTransitionAnimation(currentPathCoordinates)
                 }
             }
             else -> {
@@ -132,20 +102,26 @@ class CarMovementFragment : Fragment(), View.OnTouchListener {
      */
     private fun defineTransitionAnimation(currentPathCoordinates: ArrayList<Point>) {
         // Опрделяем текущик координаты машины.
-        val currentCarPositionX = (car?.x ?: 0f).toInt()
-        val currentCarPositionY = (car?.y ?: 0f).toInt()
+        val currentCarPositionX = (car?.x ?: 0f)
+        val currentCarPositionY = (car?.y ?: 0f)
 
         // Запускаем анимацию перемещения машины для каждой точки пути.
         for (point in currentPathCoordinates) {
             val valueAnimator = ValueAnimator.ofFloat(0f, 1f)
             valueAnimator.apply {
-                duration = 1000
+                duration = 2000
                 interpolator = AccelerateDecelerateInterpolator()
                 addUpdateListener { animator ->
                     val animationFraction = animator.animatedFraction
                     val animationPositionX = animationFraction * point.x + (1 - animationFraction) * currentCarPositionX
                     val animationPositionY = animationFraction * point.y + (1 - animationFraction) * currentCarPositionY
                     // Устанавливаем новые текущие координаты машине.
+                   car?.rotation = getAngleToRotate(
+                        currentCarPositionX.toDouble(),
+                        currentCarPositionY.toDouble(),
+                        animationPositionX.toDouble(),
+                        animationPositionY.toDouble()
+                    )
                     car?.x = animationPositionX
                     car?.y = animationPositionY
                 }
