@@ -17,5 +17,4 @@ class MainActivity : AppCompatActivity() {
             .add(R.id.container, CarMovementFragment.createInstance())
             .commit()
     }
-
 }
