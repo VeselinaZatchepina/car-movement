@@ -1,5 +1,6 @@
 package com.github.veselinazatchepina.carmovement
 
+import android.animation.Animator
 import android.animation.ValueAnimator
 import android.os.Bundle
 import android.view.*
@@ -148,12 +149,29 @@ class CarMovementFragment : Fragment(), View.OnTouchListener {
                         car?.x = animationPositionX
                         car?.y = animationPositionY
                     }
+                    addListener(object : Animator.AnimatorListener {
+                        override fun onAnimationRepeat(animation: Animator?) {
+
+                        }
+
+                        override fun onAnimationEnd(animation: Animator?) {
+                            if (indexOfStartPoint == carPathPoints.size - 1) {
+                                isCarMoving = false
+                            }
+                        }
+
+                        override fun onAnimationCancel(animation: Animator?) {
+
+                        }
+
+                        override fun onAnimationStart(animation: Animator?) {
+
+                        }
+                    })
                 }
                 valueAnimator.start()
                 if (indexOfStartPoint != carPathPoints.size - 1) {
                     handler.postDelayed(this, 30)
-                } else {
-                    isCarMoving = false
                 }
             }
         }, 30)
