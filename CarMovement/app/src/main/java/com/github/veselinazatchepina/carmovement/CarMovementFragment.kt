@@ -110,72 +110,65 @@ class CarMovementFragment : Fragment(), View.OnTouchListener {
      *  [currentPathCoordinates] список точек с координатами пути.
      */
     private fun defineTransitionAnimation(currentPathCoordinates: ArrayList<Point>) {
-        var startCarPosition = Point()
-        var endCarPosition = Point()
-        val handler = Handler()
-        var indexOfStartPoint = -1
-        var indexOfEndPoint = 1
+        // Берём из списка начальную и конечную коородинаты движения машины.
+        val startCarPosition = currentPathCoordinates[0]
+        val endCarPosition = currentPathCoordinates[1]
 
-        handler.postDelayed(object : Runnable {
-            override fun run() {
-                if (indexOfStartPoint < currentPathCoordinates.size - 1) {
-                    indexOfStartPoint++
-                    indexOfEndPoint = indexOfStartPoint + 1
+        car?.animate()?.rotation(
+            getAngleToRotate(
+                startCarPosition.x.toDouble(),
+                startCarPosition.y.toDouble(),
+                endCarPosition.x.toDouble(),
+                endCarPosition.y.toDouble()
+            )
+        )?.setDuration(500)
+            ?.setListener(object : Animator.AnimatorListener {
+                override fun onAnimationRepeat(animation: Animator?) {
+
                 }
-                // Берём из списка начальную и конечную коородинаты движения машины.
-                if (indexOfStartPoint < currentPathCoordinates.size - 1) {
-                    startCarPosition = currentPathCoordinates[indexOfStartPoint]
-                    endCarPosition = currentPathCoordinates[indexOfEndPoint]
-                }
 
-                val valueAnimator = ValueAnimator.ofFloat(0f, 1f)
-                valueAnimator.apply {
-                    duration = 1500
-                    interpolator = AccelerateDecelerateInterpolator()
-                    addUpdateListener { animator ->
-                        val animationFraction = animator.animatedFraction
-                        val animationPositionX =
-                            animationFraction * endCarPosition.x + (1 - animationFraction) * startCarPosition.x
-                        val animationPositionY =
-                            animationFraction * endCarPosition.y + (1 - animationFraction) * startCarPosition.y
-
-                        // Устанавливаем новые текущие координаты машине и поворачиваем её на вычисленный угол.
-                        car?.rotation = getAngleToRotate(
-                            startCarPosition.x.toDouble(),
-                            startCarPosition.y.toDouble(),
-                            endCarPosition.x.toDouble(),
-                            endCarPosition.y.toDouble()
-                        )
-                        car?.x = animationPositionX
-                        car?.y = animationPositionY
-                    }
-                    addListener(object : Animator.AnimatorListener {
-
-                        override fun onAnimationRepeat(animation: Animator?) {
-
+                override fun onAnimationEnd(animation: Animator?) {
+                    val valueAnimator = ValueAnimator.ofFloat(0f, 1f)
+                    valueAnimator.apply {
+                        duration = 1000
+                        interpolator = AccelerateDecelerateInterpolator()
+                        addUpdateListener { animator ->
+                            val animationFraction = animator.animatedFraction
+                            val animationPositionX =
+                                animationFraction * endCarPosition.x + (1 - animationFraction) * startCarPosition.x
+                            val animationPositionY =
+                                animationFraction * endCarPosition.y + (1 - animationFraction) * startCarPosition.y
+                            car?.x = animationPositionX
+                            car?.y = animationPositionY
                         }
+                        addListener(object : Animator.AnimatorListener {
+                            override fun onAnimationRepeat(animation: Animator?) {
 
-                        override fun onAnimationEnd(animation: Animator?) {
-                            if (indexOfStartPoint == currentPathCoordinates.size - 1) {
+                            }
+
+                            override fun onAnimationEnd(animation: Animator?) {
                                 isCarMoving = false
                             }
-                        }
 
-                        override fun onAnimationCancel(animation: Animator?) {
+                            override fun onAnimationCancel(animation: Animator?) {
 
-                        }
+                            }
 
-                        override fun onAnimationStart(animation: Animator?) {
+                            override fun onAnimationStart(animation: Animator?) {
 
-                        }
-                    })
+                            }
+
+                        })
+                    }
+                    valueAnimator.start()
                 }
-                valueAnimator.start()
-                if (indexOfStartPoint != currentPathCoordinates.size - 1) {
-                    handler.postDelayed(this, 30)
+
+                override fun onAnimationCancel(animation: Animator?) {
                 }
-            }
-        }, 30)
+
+                override fun onAnimationStart(animation: Animator?) {
+                }
+            })
     }
 
     /** Метод рассчитывает координаты поворота машины в зависимости от того, в какой квадрант попала целевая точка.
